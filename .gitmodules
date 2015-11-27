@@ -1,0 +1,8 @@
+[submodule "resources/etc/nginx"]
+	path = resources/etc/nginx
+	url = https://github.com/dietervu/infra.clarin.eu_nginx
+	branch = master
+[submodule "resources/virtual_alpine"]
+	path = resources/virtual_alpine
+	url = https://github.com/clarin-eric/virtual_alpine
+	branch = master
