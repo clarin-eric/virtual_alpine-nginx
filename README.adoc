@@ -1,0 +1,48 @@
+== Requirements
+
+* https://packer.io[Packer].
+* https://www.docker.com/[Docker].
+
+=== Suggested requirements
+
+* The `readlink` command-line utility, offered by http://www.gnu.org/software/coreutils/coreutils.html[GNU coreutils].
+
+== To build
+
+* Follow this https://github.com/sanmai-NL/guide_on_submodules[brief guide on submodules] to learn how to manage dependency submodules, if you do not know it already. Complete https://github.com/sanmai-NL/recursive_packer_build/blob/master/Project_dependencies_as_Git_submodules.adoc#getting-started-with-a-git-repository-that-has-submodules[the recursive clone] or submodule initialization of this repository.
+* Complete a https://github.com/sanmai-NL/recursive_packer_build#to-use[recursive Packer build].
+
+== To configure
+
+* First make sure your current working directory is the root directory of your local copy of this repository, and that the previously described build process has completed successfully.
+* To create the required volume container, issue:
++
+[source,Sh]
+----
+docker create \
+    --name 'vol_alpine-nginx' \
+    --volume="$(readlink -f 'resources/etc/nginx')"':/etc/nginx/' \
+    --volume="$(readlink -f 'resources/srv/www/infra.clarin.eu/')"':/srv/www/infra.clarin.eu/' \
+    --volume='/root/certstore/:/root/certstore/' \
+    'tianon/true'
+----
++
+* Finally, create the application container:
++
+----
+docker create \
+    --entrypoint='/usr/sbin/nginx' \
+    --name='alpine-nginx' \
+    --publish='127.0.0.1:80:80' \
+    --publish='127.0.0.1:443:443' \
+    --tty=true \
+    --volumes-from='vol_alpine-nginx' \
+    'docker.clarin.eu/alpine-nginx'
+----
+
+== To run
+Issue:
+[source,Sh]
+----
+docker start 'alpine-nginx'
+----

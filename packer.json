@@ -1,0 +1,32 @@
+{
+    "builders": [
+        {
+            "export_path": "{{template_dir}}/images/latest.tar",
+            "image": "docker.clarin.eu/alpine",
+            "run_command": [
+                "-d",
+                "-i",
+                "-t",
+                "{{.Image}}",
+                "/bin/sh"
+            ],
+            "pull": false,
+            "type": "docker"
+        }
+    ],
+    "post-processors": [
+        {
+            "repository": "docker.clarin.eu/alpine-nginx",
+            "tag": "latest",
+            "type": "docker-import"
+        }
+    ],
+    "provisioners": [
+        {
+            "scripts": [
+                "{{template_dir}}/provision.sh"
+            ],
+            "type": "shell"
+        }
+    ]
+}
