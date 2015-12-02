@@ -1,4 +1,4 @@
 #!/bin/sh -ex
 
-apk --verbose --progress update --purge # --update-cache
+apk --verbose --progress update --purge
 apk add 'nginx'
