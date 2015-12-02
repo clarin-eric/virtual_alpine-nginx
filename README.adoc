@@ -29,10 +29,10 @@ docker volume create --name 'etc-nginx--infra' &&
 [source,Sh]
 ----
 docker create \
-    --name='/usr/sbin/nginx' \
+    --name='alpine-nginx' \
     --publish='127.0.0.1:443:443' \
     --publish='127.0.0.1:80:80' \
-    --entrypoint='/bin/sh' \
+    --entrypoint='/usr/sbin/nginx' \
     --hostname='infra.clarin.eu' \
     --interactive=true \
     --tty=true \
