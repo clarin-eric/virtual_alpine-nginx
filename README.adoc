@@ -1,7 +1,7 @@
 == Requirements
 
 * https://packer.io[Packer].
-* https://www.docker.com/[Docker].
+* https://www.docker.com/[Docker] >= 1.9.0.
 
 === Suggested requirements
 
@@ -15,34 +15,86 @@
 == To configure
 
 * First make sure your current working directory is the root directory of your local copy of this repository, and that the previously described build process has completed successfully.
-* To create the required volume container, issue:
+* Make sure that you have the relevant Docker volumes ready. If not, create them:
++
+[source,Sh]
+----
+docker volume create --name 'etc-CLARIN_TLS' &&
+docker volume create --name 'srv-www-infra.clarin.eu--infra' &&
+docker volume create --name 'etc-nginx--infra' &&
+----
++
+* Then create the application container:
 +
 [source,Sh]
 ----
 docker create \
-    --name 'vol_alpine-nginx' \
-    --volume="$(readlink -f 'resources/etc/nginx')"':/etc/nginx/' \
-    --volume="$(readlink -f 'resources/srv/www/infra.clarin.eu/')"':/srv/www/infra.clarin.eu/' \
-    --volume='/root/certstore/:/root/certstore/' \
-    'tianon/true'
-----
-+
-* Finally, create the application container:
-+
-----
-docker create \
-    --entrypoint='/usr/sbin/nginx' \
-    --name='alpine-nginx' \
-    --publish='127.0.0.1:80:80' \
+    --name='/usr/sbin/nginx' \
     --publish='127.0.0.1:443:443' \
+    --publish='127.0.0.1:80:80' \
+    --entrypoint='/bin/sh' \
+    --hostname='infra.clarin.eu' \
+    --interactive=true \
     --tty=true \
-    --volumes-from='vol_alpine-nginx' \
-    'docker.clarin.eu/alpine-nginx'
+    --volume='etc-nginx--infra:/etc/nginx/' \
+    --volume='etc-CLARIN_TLS:/etc/CLARIN_TLS/' \
+    --volume='srv-www-infra.clarin.eu--infra:/srv/www/infra.clarin.eu/' \
+    'docker.clarin.eu/alpine-nginx' &&
+----
++
+* Finally, if you did not have the Docker volumes ready, provision them:
++
+[source,Sh]
+----
+## /etc/CLARIN_TLS
+docker run \
+    --entrypoint='/bin/sh' \
+    --interactive=true \
+    --rm \
+    --tty=true \
+    --volume='/root/certstore2:/etc/CLARIN_TLS/' \
+    --volume='etc-CLARIN_TLS:/vol/' \
+    'docker.clarin.eu/alpine' \
+    -c "'/sbin/apk' add 'rsync' && '/usr/bin/rsync' -avp '/etc/CLARIN_TLS/' '/vol/'" &&
+
+## /srv/www/infra.clarin.eu/
+docker run \
+    --entrypoint='/bin/sh' \
+    --interactive=true \
+    --rm \
+    --tty=true \
+    --volume="$(readlink -f 'resources/srv/www/infra.clarin.eu/')"':/srv/www/infra.clarin.eu/' \
+    --volume='srv-www-infra.clarin.eu--infra:/vol/' \
+    'docker.clarin.eu/alpine' \
+    -c "/sbin/apk add 'rsync' && '/usr/bin/rsync' -avp '/srv/www/infra.clarin.eu/' '/vol/'" &&
+
+## /etc/nginx/
+docker run \
+    --entrypoint='/bin/sh' \
+    --interactive=true \
+    --rm \
+    --tty=true \
+    --volume="$(readlink -f 'resources/etc/nginx')"':/etc/nginx/' \
+    --volume='etc-nginx--infra:/vol/' \
+    'docker.clarin.eu/alpine' \
+    -c "'/sbin/apk' add 'rsync' && '/usr/bin/rsync' -avp --cvs-exclude '/etc/nginx/' '/vol/'" &&
+
 ----
 
 == To run
-Issue:
+
 [source,Sh]
 ----
-docker start 'alpine-nginx'
+docker start 'alpine-nginx' &&
+docker exec -ti 'alpine-nginx' /bin/sh
+----
+
+=== To destroy
+
+[source,Sh]
+----
+docker stop 'alpine-nginx' &&
+docker rm 'alpine-nginx' &&
+## WARNING: The following will delete all data in these volumes!
+docker volume rm 'etc-CLARIN_TLS' 'etc-nginx--infra' 'srv-www-infra.clarin.eu--infra'
 ----
