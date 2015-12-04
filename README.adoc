@@ -26,12 +26,10 @@ docker volume create --name 'etc-nginx--infra'
 ----
 docker create \
     --name='alpine-nginx--infra' \
-    --publish='443:443' \
-    --publish='80:80' \
+    --publish='127.0.0.1:443:443' \
+    --publish='127.0.0.1:80:80' \
     --entrypoint='/usr/sbin/nginx' \
     --hostname='infra.clarin.eu' \
-    --interactive=true \
-    --tty=true \
     --volume='etc-nginx--infra:/etc/nginx/' \
     --volume='etc-CLARIN_TLS--infra:/etc/CLARIN_TLS/' \
     --volume='srv-www-infra.clarin.eu--infra:/srv/www/infra.clarin.eu/' \
