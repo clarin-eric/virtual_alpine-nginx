@@ -3,10 +3,6 @@
 * https://packer.io[Packer].
 * https://www.docker.com/[Docker] >= 1.9.0.
 
-=== Suggested requirements
-
-* The `readlink` command-line utility, offered by http://www.gnu.org/software/coreutils/coreutils.html[GNU coreutils].
-
 == To build
 
 * Make sure that you have the relevant Docker volumes ready. These will be provisioned during build. If not, create them:
@@ -15,11 +11,11 @@
 ----
 docker volume create --name 'etc-CLARIN_TLS--infra' &&
 docker volume create --name 'srv-www-infra.clarin.eu--infra' &&
-docker volume create --name 'etc-nginx--infra' &&
+docker volume create --name 'etc-nginx--infra'
 ----
 +
 * Follow this https://github.com/sanmai-NL/guide_on_submodules[brief guide on submodules] to learn how to manage dependency submodules, if you do not know it already. Complete https://github.com/sanmai-NL/recursive_packer_build/blob/master/Project_dependencies_as_Git_submodules.adoc#getting-started-with-a-git-repository-that-has-submodules[the recursive clone] or submodule initialization of this repository.
-* Complete a https://github.com/sanmai-NL/recursive_packer_build#to-use[recursive Packer build].
+* Complete a https://github.com/sanmai-NL/recursive_packer_build#to-use[recursive Packer build] by issuing `build_all` from a POSIX shell with the root of your clone of this repository as working directory.
 
 == To configure
 
@@ -39,7 +35,7 @@ docker create \
     --volume='etc-nginx--infra:/etc/nginx/' \
     --volume='etc-CLARIN_TLS--infra:/etc/CLARIN_TLS/' \
     --volume='srv-www-infra.clarin.eu--infra:/srv/www/infra.clarin.eu/' \
-    'docker.clarin.eu/alpine-nginx' &&
+    'docker.clarin.eu/alpine-nginx'
 ----
 
 == To run
