@@ -9,12 +9,11 @@
             "name": "docker.clarin.eu/alpine-nginx",
             "pull": false,
             "run_command": [
+                "--volume=/root/certstore2/:/etc/CLARIN_TLS/:ro",
+                "--volume={{template_dir}}/resources/etc/nginx/:/media/etc/nginx/:ro",
+                "--volume={{template_dir}}/resources/srv/www/infra.clarin.eu/:/srv/www/infra.clarin.eu/:ro",
                 "--volume=etc-CLARIN_TLS--infra:/vol/etc-CLARIN_TLS--infra/",
-                "--volume=etc-nginx--infra:/vol/etc-nginx--infra/",
                 "--volume=srv-www-infra.clarin.eu--infra:/vol/srv-www-infra.clarin.eu--infra/",
-                "--volume=/root/certstore2/:/etc/CLARIN_TLS/",
-                "--volume={{template_dir}}/resources/etc/nginx/:/etc/nginx/",
-                "--volume={{template_dir}}/resources/srv/www/infra.clarin.eu/:/srv/www/infra.clarin.eu/",
                 "-d",
                 "-i",
                 "-t",
@@ -26,7 +25,7 @@
     ],
     "post-processors": [
         {
-            "repository": "docker.clarin.eu/{{build_name}}",
+            "repository": "{{build_name}}",
             "tag": "{{user `my_build_revision`}}",
             "type": "docker-import"
         }

@@ -10,8 +10,7 @@
 [source,Sh]
 ----
 docker volume create --name 'etc-CLARIN_TLS--infra' &&
-docker volume create --name 'srv-www-infra.clarin.eu--infra' &&
-docker volume create --name 'etc-nginx--infra'
+docker volume create --name 'srv-www-infra.clarin.eu--infra'
 ----
 +
 * Follow this https://github.com/sanmai-NL/guide_on_submodules[brief guide on submodules] to learn how to manage dependency submodules, if you do not know it already. Complete https://github.com/sanmai-NL/recursive_packer_build/blob/master/Project_dependencies_as_Git_submodules.adoc#getting-started-with-a-git-repository-that-has-submodules[the recursive clone] or submodule initialization of this repository.
@@ -20,36 +19,42 @@ docker volume create --name 'etc-nginx--infra'
 == To configure
 
 * After the previously described build process has completed successfully, `cd` to the root directory of your local copy of this repository.
+* Determine which version of the image you want to use. To set the shell variable BUILD_REVISION to the tag specified to the previous build:
++
+[source,Sh]
+----
+BUILD_REVISION="$(git rev-parse --short @)"
+----
++
 * Create the application container:
 +
 [source,Sh]
 ----
 docker create \
-    --name='alpine-nginx--infra' \
+    --name="alpine-nginx--infra--${BUILD_REVISION}" \
     --publish='127.0.0.1:443:443' \
     --publish='127.0.0.1:80:80' \
     --entrypoint='/usr/sbin/nginx' \
     --hostname='infra.clarin.eu' \
-    --volume='etc-nginx--infra:/etc/nginx/' \
     --volume='etc-CLARIN_TLS--infra:/etc/CLARIN_TLS/' \
     --volume='srv-www-infra.clarin.eu--infra:/srv/www/infra.clarin.eu/' \
-    'docker.clarin.eu/alpine-nginx'
+    "docker.clarin.eu/alpine-nginx:${BUILD_REVISION}"
 ----
 
 == To run
 
 [source,Sh]
 ----
-docker start 'alpine-nginx--infra' &&
-docker exec -ti 'alpine-nginx--infra' /bin/sh
+docker start "alpine-nginx--infra--${BUILD_REVISION}" &&
+docker exec -ti "alpine-nginx--infra--${BUILD_REVISION}" /bin/sh
 ----
 
 === To destroy
 
 [source,Sh]
 ----
-docker stop 'alpine-nginx--infra' &&
-docker rm 'alpine-nginx--infra' &&
+docker stop "alpine-nginx--infra--${BUILD_REVISION}" &&
+docker rm "alpine-nginx--infra--${BUILD_REVISION}" &&
 ## WARNING: The following will delete all data in these volumes!
-docker volume rm 'etc-CLARIN_TLS--infra' 'etc-nginx--infra' 'srv-www-infra.clarin.eu--infra'
+docker volume rm 'etc-CLARIN_TLS--infra' 'srv-www-infra.clarin.eu--infra'
 ----
