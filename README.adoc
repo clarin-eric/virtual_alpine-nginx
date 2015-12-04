@@ -9,92 +9,53 @@
 
 == To build
 
+* Make sure that you have the relevant Docker volumes ready. These will be provisioned during build. If not, create them:
++
+[source,Sh]
+----
+docker volume create --name 'etc-CLARIN_TLS--infra' &&
+docker volume create --name 'srv-www-infra.clarin.eu--infra' &&
+docker volume create --name 'etc-nginx--infra' &&
+----
++
 * Follow this https://github.com/sanmai-NL/guide_on_submodules[brief guide on submodules] to learn how to manage dependency submodules, if you do not know it already. Complete https://github.com/sanmai-NL/recursive_packer_build/blob/master/Project_dependencies_as_Git_submodules.adoc#getting-started-with-a-git-repository-that-has-submodules[the recursive clone] or submodule initialization of this repository.
 * Complete a https://github.com/sanmai-NL/recursive_packer_build#to-use[recursive Packer build].
 
 == To configure
 
-* First make sure your current working directory is the root directory of your local copy of this repository, and that the previously described build process has completed successfully.
-* Make sure that you have the relevant Docker volumes ready. If not, create them:
-+
-[source,Sh]
-----
-docker volume create --name 'etc-CLARIN_TLS' &&
-docker volume create --name 'srv-www-infra.clarin.eu--infra' &&
-docker volume create --name 'etc-nginx--infra' &&
-----
-+
-* Then create the application container:
+* After the previously described build process has completed successfully, `cd` to the root directory of your local copy of this repository.
+* Create the application container:
 +
 [source,Sh]
 ----
 docker create \
-    --name='alpine-nginx' \
-    --publish='127.0.0.1:443:443' \
-    --publish='127.0.0.1:80:80' \
+    --name='alpine-nginx--infra' \
+    --publish='443:443' \
+    --publish='80:80' \
     --entrypoint='/usr/sbin/nginx' \
     --hostname='infra.clarin.eu' \
     --interactive=true \
     --tty=true \
     --volume='etc-nginx--infra:/etc/nginx/' \
-    --volume='etc-CLARIN_TLS:/etc/CLARIN_TLS/' \
+    --volume='etc-CLARIN_TLS--infra:/etc/CLARIN_TLS/' \
     --volume='srv-www-infra.clarin.eu--infra:/srv/www/infra.clarin.eu/' \
     'docker.clarin.eu/alpine-nginx' &&
-----
-+
-* Finally, if you did not have the Docker volumes ready, provision them:
-+
-[source,Sh]
-----
-## /etc/CLARIN_TLS
-docker run \
-    --entrypoint='/bin/sh' \
-    --interactive=true \
-    --rm \
-    --tty=true \
-    --volume='/root/certstore2:/etc/CLARIN_TLS/' \
-    --volume='etc-CLARIN_TLS:/vol/' \
-    'docker.clarin.eu/alpine' \
-    -c "'/sbin/apk' add 'rsync' && '/usr/bin/rsync' -avp '/etc/CLARIN_TLS/' '/vol/'" &&
-
-## /srv/www/infra.clarin.eu/
-docker run \
-    --entrypoint='/bin/sh' \
-    --interactive=true \
-    --rm \
-    --tty=true \
-    --volume="$(readlink -f 'resources/srv/www/infra.clarin.eu/')"':/srv/www/infra.clarin.eu/' \
-    --volume='srv-www-infra.clarin.eu--infra:/vol/' \
-    'docker.clarin.eu/alpine' \
-    -c "/sbin/apk add 'rsync' && '/usr/bin/rsync' -avp '/srv/www/infra.clarin.eu/' '/vol/'" &&
-
-## /etc/nginx/
-docker run \
-    --entrypoint='/bin/sh' \
-    --interactive=true \
-    --rm \
-    --tty=true \
-    --volume="$(readlink -f 'resources/etc/nginx')"':/etc/nginx/' \
-    --volume='etc-nginx--infra:/vol/' \
-    'docker.clarin.eu/alpine' \
-    -c "'/sbin/apk' add 'rsync' && '/usr/bin/rsync' -avp --cvs-exclude '/etc/nginx/' '/vol/'" &&
-
 ----
 
 == To run
 
 [source,Sh]
 ----
-docker start 'alpine-nginx' &&
-docker exec -ti 'alpine-nginx' /bin/sh
+docker start 'alpine-nginx--infra' &&
+docker exec -ti 'alpine-nginx--infra' /bin/sh
 ----
 
 === To destroy
 
 [source,Sh]
 ----
-docker stop 'alpine-nginx' &&
-docker rm 'alpine-nginx' &&
+docker stop 'alpine-nginx--infra' &&
+docker rm 'alpine-nginx--infra' &&
 ## WARNING: The following will delete all data in these volumes!
-docker volume rm 'etc-CLARIN_TLS' 'etc-nginx--infra' 'srv-www-infra.clarin.eu--infra'
+docker volume rm 'etc-CLARIN_TLS--infra' 'etc-nginx--infra' 'srv-www-infra.clarin.eu--infra'
 ----

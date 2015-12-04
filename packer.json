@@ -4,6 +4,12 @@
             "export_path": "{{template_dir}}/images/latest.tar",
             "image": "docker.clarin.eu/alpine",
             "run_command": [
+                "--volume=etc-CLARIN_TLS--infra:/vol/etc-CLARIN_TLS--infra/",
+                "--volume=etc-nginx--infra:/vol/etc-nginx--infra/",
+                "--volume=srv-www-infra.clarin.eu--infra:/vol/srv-www-infra.clarin.eu--infra/",
+                "--volume=/root/certstore2/:/etc/CLARIN_TLS/",
+                "--volume={{template_dir}}/resources/etc/nginx/:/etc/nginx/",
+                "--volume={{template_dir}}/resources/srv/www/infra.clarin.eu/:/srv/www/infra.clarin.eu/",
                 "-d",
                 "-i",
                 "-t",
