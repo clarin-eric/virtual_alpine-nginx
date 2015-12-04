@@ -1,8 +1,13 @@
 {
+    "variables": {
+        "my_build_revision": "{{env `BUILD_REVISION`}}"
+    },
     "builders": [
         {
-            "export_path": "{{template_dir}}/images/latest.tar",
+            "export_path": "{{template_dir}}/images/{{build_name}}.tar",
             "image": "docker.clarin.eu/alpine",
+            "name": "docker.clarin.eu/alpine-nginx",
+            "pull": false,
             "run_command": [
                 "--volume=etc-CLARIN_TLS--infra:/vol/etc-CLARIN_TLS--infra/",
                 "--volume=etc-nginx--infra:/vol/etc-nginx--infra/",
@@ -16,14 +21,13 @@
                 "{{.Image}}",
                 "/bin/sh"
             ],
-            "pull": false,
             "type": "docker"
         }
     ],
     "post-processors": [
         {
-            "repository": "docker.clarin.eu/alpine-nginx",
-            "tag": "latest",
+            "repository": "docker.clarin.eu/{{build_name}}",
+            "tag": "{{user `my_build_revision`}}",
             "type": "docker-import"
         }
     ],
